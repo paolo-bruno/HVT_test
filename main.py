@@ -27,8 +27,12 @@ import utils
 from params import args
 from logger import logger
 
+import wandb
+
 
 def main():
+    wandb.init(project='default', name=args.model)
+    wandb.config.update(args)
     utils.init_distributed_mode(args)
     if utils.get_rank() != 0:
         logger.disabled = True
@@ -218,6 +222,7 @@ def main():
                     'scaler': loss_scaler.state_dict(),
                     'args': args,
                 }, checkpoint_path)
+                wandb.save(str(checkpoint_path))
 
         test_stats = evaluate(data_loader_val, model, device)
         logger.info(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")

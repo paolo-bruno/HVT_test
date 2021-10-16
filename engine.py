@@ -16,6 +16,9 @@ from losses import DistillationLoss
 import utils
 from logger import logger
 
+import wandb
+
+
 def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
                     device: torch.device, epoch: int, loss_scaler, max_norm: float = 0,
@@ -55,6 +58,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
 
         metric_logger.update(loss=loss_value)
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
+        wandb.log({'lr': optimizer.param_groups[0]["lr"]}, commit=False)
     # gather the stats from all processes
     metric_logger.synchronize_between_processes()
     logger.info(f"Averaged stats: {metric_logger}")
@@ -90,5 +94,8 @@ def evaluate(data_loader, model, device):
     metric_logger.synchronize_between_processes()
     logger.info('* Acc@1 {top1.global_avg:.3f} Acc@5 {top5.global_avg:.3f} loss {losses.global_avg:.3f}'
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
+
+    wandb.log({'eval_top1': metric_logger.acc1.global_avg, 'eval_top5': metric_logger.acc5.global_avg,
+               'eval_loss': metric_logger.loss.global_avg})
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
