@@ -31,7 +31,7 @@ import wandb
 
 
 def main():
-    wandb.init(project='default', name=args.model)
+    wandb.init(project='default', name=args.model, resume=True)
     wandb.config.update(args)
     utils.init_distributed_mode(args)
     if utils.get_rank() != 0:
