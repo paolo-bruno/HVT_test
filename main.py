@@ -32,7 +32,7 @@ import wandb
 
 def main():
     wandb.init(project='default', name=args.model, resume=True)
-    wandb.config.update(args)
+    wandb.config.update(args, allow_val_change=True)
     utils.init_distributed_mode(args)
     if utils.get_rank() != 0:
         logger.disabled = True
